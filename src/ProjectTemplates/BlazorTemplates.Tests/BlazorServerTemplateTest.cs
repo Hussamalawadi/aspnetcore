@@ -19,15 +19,14 @@ namespace Templates.Test
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
         public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> fixture, ITestOutputHelper output)
+            : base(fixture)
         {
-            ProjectFactory = projectFactory;
-            Fixture = fixture;
+            ProjectFactory = projectFactory; ;
             Output = output;
             BrowserContextInfo = new ContextInformation(CreateFactory(output));
         }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
-
         public ITestOutputHelper Output { get; }
         public ContextInformation BrowserContextInfo { get; }
         public Project Project { get; private set; }
@@ -100,7 +99,7 @@ namespace Templates.Test
         }
 
         public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
-                BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true , false);
+                BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
 
         [Theory]
         [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
