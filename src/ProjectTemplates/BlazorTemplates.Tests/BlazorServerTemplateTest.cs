@@ -54,7 +54,7 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            var browser = Fixture.BrowserManager.IsAvailable(browserKind) ?
+            await using var browser = Fixture.BrowserManager.IsAvailable(browserKind) ?
                 await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
                 null;
 
@@ -68,7 +68,8 @@ namespace Templates.Test
 
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    var page = await browser.NewPageAsync();
+                    await aspNetProcess.VisitInBrowserAsync(page);
                     await TestBasicNavigation(page);
                     await page.CloseAsync();
                 }
@@ -87,7 +88,8 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    var page = await browser.NewPageAsync();
+                    await aspNetProcess.VisitInBrowserAsync(page);
                     await TestBasicNavigation(page);
                     await page.CloseAsync();
                 }
@@ -136,7 +138,8 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    var page = await browser.NewPageAsync();
+                    await aspNetProcess.VisitInBrowserAsync(page);
                     await TestBasicNavigation(page);
                     await page.CloseAsync();
                 }
@@ -155,7 +158,8 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    var page = await browser.NewPageAsync();
+                    await aspNetProcess.VisitInBrowserAsync(page);
                     await TestBasicNavigation(page);
                     await page.CloseAsync();
                 }
@@ -171,7 +175,13 @@ namespace Templates.Test
             var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
                 (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
 
+            // Receive render batch
             await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
+            await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+
+            // JS interop call to intercept navigation
+            await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
+            await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
 
             await page.WaitForSelectorAsync("ul");
             // <title> element gets project ID injected into it during template execution
@@ -181,22 +191,16 @@ namespace Templates.Test
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
 
             // Can navigate to the counter page
-            await Task.WhenAll(
-                page.WaitForNavigationAsync("**/counter"),
-                page.WaitForSelectorAsync("h1+p >> text=Current count: 0"),
-                page.ClickAsync("a[href=counter] >> text=Counter"));
+            await page.ClickAsync("a[href=counter] >> text=Counter");
+            await page.WaitForSelectorAsync("h1+p >> text=Current count: 0");
 
             // Clicking the counter button works
-            await Task.WhenAll(
-                socket.WaitForEventAsync(WebSocketEvent.FrameReceived),
-                page.WaitForSelectorAsync("h1+p >> text=Current count: 1"),
-                page.ClickAsync("p+button >> text=Click me"));
+            await page.ClickAsync("p+button >> text=Click me");
+            await page.WaitForSelectorAsync("h1+p >> text=Current count: 1");
 
             // Can navigate to the 'fetch data' page
-            await Task.WhenAll(
-                page.WaitForNavigationAsync("**/fetchdata"),
-                page.WaitForSelectorAsync("h1 >> text=Weather forecast"),
-                page.ClickAsync("a[href=fetchdata] >> text=Fetch data"));
+            await page.ClickAsync("a[href=fetchdata] >> text=Fetch data");
+            await page.WaitForSelectorAsync("h1 >> text=Weather forecast");
 
             // Asynchronously loads and displays the table of weather forecasts
             await page.WaitForSelectorAsync("table>tbody>tr");

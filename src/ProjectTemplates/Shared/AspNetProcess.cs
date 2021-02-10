@@ -102,12 +102,10 @@ namespace Templates.Test.Helpers
             }
         }
 
-        public async Task<IPage> VisitInBrowserAsync(IBrowserContext context)
+        public async Task VisitInBrowserAsync(IPage page)
         {
             _output.WriteLine($"Opening browser at {ListeningUri}...");
-            var page = await context.NewPageAsync();
             await page.GoToAsync(ListeningUri.AbsoluteUri);
-            return page;
         }
 
 

@@ -121,7 +121,8 @@ namespace Templates.Test
             if (Fixture.BrowserManager.IsAvailable(browserKind))
             {
                 await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                var page = await browser.NewPageAsync();
+                await aspNetProcess.VisitInBrowserAsync(page);
                 await TestBasicNavigation(project.ProjectName, page);
             }
             else
@@ -229,7 +230,8 @@ namespace Templates.Test
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
 
                     await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                    page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    page = await browser.NewPageAsync();
+                    await aspNetProcess.VisitInBrowserAsync(page);
                     await TestBasicNavigation(project.ProjectName, page);
 
                     // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
@@ -350,7 +352,8 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
                 await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                var page = await browser.NewPageAsync();
+                await aspNetProcess.VisitInBrowserAsync(page);
                 await TestBasicNavigation(project.ProjectName, page, usesAuth: true);
                 await page.CloseAsync();
             }
@@ -510,7 +513,8 @@ namespace Templates.Test
             if (Fixture.BrowserManager.IsAvailable(browserKind))
             {
                 await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                var page = await browser.NewPageAsync();
+                await aspNetProcess.VisitInBrowserAsync(page);
                 await TestBasicNavigation(appName, page, usesAuth);
                 await page.CloseAsync();
             }

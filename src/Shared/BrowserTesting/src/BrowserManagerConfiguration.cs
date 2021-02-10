@@ -313,10 +313,14 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 Proxy = overrideOptions?.Proxy != default ? overrideOptions.Proxy : defaultOptions.Proxy,
                 RecordVideo = overrideOptions?.RecordVideo != default ?
                     new() { Dir = overrideOptions.RecordVideo.Dir, Size = overrideOptions.RecordVideo.Size?.Clone() } :
-                    new() { Dir = defaultOptions.RecordVideo.Dir, Size = defaultOptions.RecordVideo.Size?.Clone() },
+                    defaultOptions != default ?
+                        new() { Dir = defaultOptions.RecordVideo.Dir, Size = defaultOptions.RecordVideo.Size?.Clone() } :
+                        default,
                 RecordHar = overrideOptions?.RecordHar != default ?
                     new() { Path = overrideOptions.RecordHar.Path, OmitContent = overrideOptions.RecordHar.OmitContent } :
-                    new() { Path = defaultOptions.RecordHar.Path, OmitContent = defaultOptions.RecordHar.OmitContent },
+                    defaultOptions?.RecordHar != default ?
+                        new() { Path = defaultOptions.RecordHar.Path, OmitContent = defaultOptions.RecordHar.OmitContent } :
+                        default,
                 ExtraHTTPHeaders = overrideOptions?.ExtraHTTPHeaders != default ? overrideOptions.ExtraHTTPHeaders : defaultOptions.ExtraHTTPHeaders,
                 Locale = overrideOptions?.Locale != default ? overrideOptions.Locale : defaultOptions.Locale,
                 ColorScheme = overrideOptions?.ColorScheme != default ? overrideOptions.ColorScheme : defaultOptions.ColorScheme,
